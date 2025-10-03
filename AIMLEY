@@ -1,0 +1,31 @@
+import numpy as np
+import pandas as pd
+from sklearn.cluster import KMeans
+
+# Step 1: Dummy ecological data for 10 locations
+np.random.seed(42)
+locations = ['LocA','LocB','LocC','LocD','LocE','LocF','LocG','LocH','LocI','LocJ']
+data = {
+    'Temperature': np.random.randint(15, 35, 10),
+    'Rainfall': np.random.randint(800, 2000, 10),
+    'Elevation': np.random.randint(100, 2000, 10)
+}
+known_zones = ['Zone1','Zone1','Zone2','Zone2','Zone2','Zone3','Zone3','Zone3','Zone1','Zone2']
+df = pd.DataFrame(data, index=locations)
+df['KnownZone'] = known_zones
+
+# Step 2: Apply K-means clustering
+kmeans = KMeans(n_clusters=3)
+df['Cluster'] = kmeans.fit_predict(df[['Temperature','Rainfall','Elevation']])
+
+# Step 3: Compare cluster memberships with known zones
+print('Comparison of Clusters and Known Ecological Zones:')
+print(df[['KnownZone','Cluster']].sort_values('Cluster'))
+
+# Step 4: Quick cluster purity calculation
+for i in sorted(df['Cluster'].unique()):
+    major_zone = df[df['Cluster']==i]['KnownZone'].mode()[0]
+    count_major_zone = (df[df['Cluster']==i]['KnownZone'] == major_zone).sum()
+    total_count = (df['Cluster']==i).sum()
+    print(f"Cluster {i}: Major Zone = {major_zone}, Purity = {count_major_zone/total_count:.2f}")
+
